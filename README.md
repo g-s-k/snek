@@ -7,3 +7,7 @@ a console snake game using [termion](https://docs.rs/termion)
 ``` shell
 $ cargo run
 ```
+
+## preview
+
+![screenshot of gameplay](./screen.png)
