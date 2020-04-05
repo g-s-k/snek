@@ -1,20 +1,18 @@
 name: Release on tag
 
+# for the reason why this is so complicated, see:
+# https://github.com/actions/create-release/issues/14#issuecomment-555379810
+
 on:
   push:
     tags:
       - 'v*'
 
 jobs:
-  release:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest]
-    runs-on: ${{ matrix.os }}
+  create_release:
+    name: Create release
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Build on ${{ matrix.os }}
-      run: cargo build --verbose --release
     - name: Create release
       id: create_release
       uses: actions/create-release@v1
@@ -25,13 +23,40 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
+    - name: Output release URL file
+      run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+    - name: Save Release URL File for publish
+      uses: actions/upload-artifact@v1
+      with:
+        name: release_url
+        path: release_url.txt
+
+  artifacts:
+    needs: [create_release]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build on ${{ matrix.os }}
+      run: cargo build --verbose --release
+    - name: Load release URL file
+      uses: actions/download-artifact@v1
+      with:
+        name: release_url
+    - name: Get release file name & upload URL
+      id: get_release_info
+      run: |
+        value=`cat release_url/release_url.txt`
+        echo ::set-output name=upload_url::$value
     - name: Publish binary for ${{ matrix.os }}
       id: upload_release_asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
         asset_path: ./target/release/snek
         asset_name: snek-${{ runner.os }}
         asset_content_type: application/octet-stream
