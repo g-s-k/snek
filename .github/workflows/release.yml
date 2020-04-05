@@ -6,10 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  release:  
-
-      
-  artifacts:
+  release:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macOS-latest]
