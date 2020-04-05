@@ -40,24 +40,26 @@ impl Pixel {
 
 #[derive(Debug)]
 pub struct Snake {
-    pub head: Pixel,
+    head: Pixel,
     facing: Direction,
     to_first_bend: Value,
     bends: VecDeque<(Value, Direction)>,
 }
 
-impl Default for Snake {
-    fn default() -> Self {
+impl Snake {
+    pub fn new(head: Pixel) -> Self {
         Self {
-            head: Pixel::default(),
+            head,
             facing: Direction::Right,
             to_first_bend: INITIAL_LENGTH,
             bends: VecDeque::new(),
         }
     }
-}
 
-impl Snake {
+    pub fn head(&self) -> Pixel {
+        self.head
+    }
+
     pub fn rasterize(&self, term_size: Pixel) -> Raster {
         let mut current_direction = self.facing.opposite();
         let mut bend_queue = self.bends.iter();

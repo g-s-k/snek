@@ -31,11 +31,7 @@ fn get_adjusted_term_size() -> io::Result<Pixel> {
 
 fn generate_game(term_size: Pixel) -> (Snake, Pixel) {
     (
-        {
-            let mut snek = Snake::default();
-            snek.head = Pixel::randomize(term_size);
-            snek
-        },
+        Snake::new(Pixel::randomize(term_size)),
         Pixel::randomize(term_size),
     )
 }
@@ -73,17 +69,19 @@ fn main() -> io::Result<()> {
     write!(screen, "{}", termion::cursor::Hide)?;
 
     let lost = loop {
-        let snek_pixels = snek.rasterize(get_adjusted_term_size()?);
+        let current_term_size = get_adjusted_term_size()?;
+        let snek_head = snek.head();
+        let snek_pixels = snek.rasterize(current_term_size);
 
-        if snek.head.r#in(&snek_pixels) {
+        if snek_head.r#in(&snek_pixels) {
             break true;
         }
 
-        if snek.head == food {
+        if snek_head == food {
             snek.grow();
 
-            while food == snek.head || food.r#in(&snek_pixels) {
-                food = Pixel::randomize(get_adjusted_term_size()?);
+            while food == snek_head || food.r#in(&snek_pixels) {
+                food = Pixel::randomize(current_term_size);
             }
         }
 
@@ -99,7 +97,7 @@ fn main() -> io::Result<()> {
         )?;
         // snake
         write!(screen, "{}", color::Bg(color::Green))?;
-        write!(screen, "{}  ", Goto(snek.head.x * 2 + 1, snek.head.y + 1))?;
+        write!(screen, "{}  ", Goto(snek_head.x * 2 + 1, snek_head.y + 1))?;
         for (y, x_vals) in snek_pixels {
             write!(screen, "{}", Goto(1, y + 1))?;
 
