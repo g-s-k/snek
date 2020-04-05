@@ -17,7 +17,6 @@ jobs:
       run: cargo build --verbose --release
     - name: Create release
       id: create_release
-      if: contains(matrix.os, 'ubuntu')
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,5 +33,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./target/release/snek
-        asset_name: snek-${{ matrix.os }}
+        asset_name: snek-${{ runner.os }}
         asset_content_type: application/octet-stream
