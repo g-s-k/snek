@@ -19,9 +19,7 @@ pub struct Pixel {
 impl Pixel {
     pub fn r#in(&self, m: &Raster) -> bool {
         if let Some(v) = m.get(&self.y) {
-            if let Some(_) = v.get(&self.x) {
-                return true;
-            }
+            return v.get(&self.x).is_some();
         }
 
         false

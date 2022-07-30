@@ -7,7 +7,7 @@ use std::{
 
 use termion::{
     color,
-    cursor::{Goto, Right},
+    cursor::{Down, Goto, Right},
     event::Key::{self, Char},
     input::TermRead,
     raw::IntoRawMode,
@@ -24,7 +24,7 @@ use snake::{Pixel, Snake};
 /// get terminal size, but half the X value
 fn get_adjusted_term_size() -> io::Result<Pixel> {
     termion::terminal_size().map(|(x, y)| Pixel {
-        x: (x - 1) / 2,
+        x: x / 2 - 1,
         y: y - 1,
     })
 }
@@ -112,6 +112,15 @@ fn main() -> io::Result<()> {
                 write!(screen, "  ")?;
 
                 last_x = Some(x);
+            }
+        }
+        // border for odd sized terminals
+        let (raw_size_x, raw_size_y) = termion::terminal_size()?;
+        if raw_size_x % 2 == 1 {
+            write!(screen, "{}", color::Bg(color::LightBlack))?;
+            write!(screen, "{}", Goto(raw_size_x, 1))?;
+            for _ in 0..raw_size_y {
+                write!(screen, " {}", Down(1))?;
             }
         }
         write!(screen, "{}", Reset)?;
